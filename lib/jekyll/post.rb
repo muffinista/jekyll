@@ -189,8 +189,12 @@ module Jekyll
       }.deep_merge(site_payload)
 
       do_layout(payload, layouts)
+    rescue Exception => e
+      puts "ERROR WITH #{self.name}"
+      puts e.backtrace
     end
-    
+
+
     # Obtain destination path.
     #   +dest+ is the String path to the destination dir
     #
