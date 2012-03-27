@@ -109,6 +109,8 @@ module Jekyll
       }.deep_merge(site_payload)
 
       do_layout(payload, layouts)
+    rescue Exception => e
+      puts e.inspect
     end
 
     # Convert this Page's data to a Hash suitable for use by Liquid.
@@ -140,6 +142,7 @@ module Jekyll
     # Returns nothing.
     def write(dest)
       path = destination(dest)
+      puts "write to #{path}"
       FileUtils.mkdir_p(File.dirname(path))
       File.open(path, 'w') do |f|
         f.write(self.output)
