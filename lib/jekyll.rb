@@ -24,7 +24,7 @@ require 'English'
 # 3rd party
 require 'liquid'
 require 'maruku'
-require 'albino'
+require 'pygments'
 
 # internal requires
 require 'jekyll/core_ext'
@@ -59,6 +59,7 @@ module Jekyll
     'source'       => Dir.pwd,
     'destination'  => File.join(Dir.pwd, '_site'),
     'plugins'      => File.join(Dir.pwd, '_plugins'),
+    'layouts'      => '_layouts',
 
     'future'       => true,
     'lsi'          => false,
