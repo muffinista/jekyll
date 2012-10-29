@@ -56,12 +56,24 @@ module Jekyll
       converter.output_ext(self.ext)
     end
 
+    def converter_for(c)
+      if c == false
+        Jekyll::IdentityConverter
+      else
+        Kernel.const_get "Jekyll::{c.capitalize}Converter"
+      end
+    end
+    
     # Determine which converter to use based on this convertible's
     # extension.
     #
     # Returns the Converter instance.
     def converter
-      @converter ||= self.site.converters.find { |c| c.matches(self.ext) }
+      @converter ||= if self.data && self.data['converter']
+                       converter_for(self.data['converter'])                      
+                     else
+                       self.site.converters.find { |c| c.matches(self.ext) }
+                     end
     end
 
     # Add any necessary layouts to this convertible document.

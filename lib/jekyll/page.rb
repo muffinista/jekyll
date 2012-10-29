@@ -111,6 +111,7 @@ module Jekyll
       do_layout(payload, layouts)
     rescue Exception => e
       puts e.inspect
+	  raise e
     end
 
     # Convert this Page's data to a Hash suitable for use by Liquid.

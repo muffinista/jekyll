@@ -101,6 +101,13 @@ class TestPage < Test::Unit::TestCase
         assert File.exists?(File.join(dest_dir, 'contacts.html'))
       end
 
+      should "recognize false converter in yaml" do
+        page = setup_page("custom.html")
+        do_render(page)
+        assert_equal "/custom.html", page.url
+        assert_equal "<b>Hello!</b> **there**!\n", page.output
+      end
+      
       should "write properly without html extension" do
         page = setup_page('contacts.html')
         page.site.permalink_style = :pretty

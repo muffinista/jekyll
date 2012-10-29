@@ -309,6 +309,13 @@ class TestPost < Test::Unit::TestCase
         assert_equal "<p>Post with a front matter time</p>\n<p>10 Jan 2010</p>", post.output
       end
 
+      should "recognize false converter in yaml" do
+        post = setup_post("2012-10-29-false-converter.html")
+        do_render(post)
+        assert_equal "/2012/10/29/false-converter.html", post.url
+        assert_equal "<b>Post</b> without **any** conversion\n", post.output
+      end
+
       should "recognize time with timezone in yaml" do
         post = setup_post("2010-01-09-timezone-override.textile")
         do_render(post)
