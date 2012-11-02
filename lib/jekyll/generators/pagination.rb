@@ -30,12 +30,18 @@ module Jekyll
     #                   "previous_page" => <Number>,
     #                   "next_page" => <Number> }}
     def paginate(site, page)
+
+      robots = site.config['paginate_robots']
+
       all_posts = site.site_payload['site']['posts']
       pages = Pager.calculate_pages(all_posts, site.config['paginate'].to_i)
       (1..pages).each do |num_page|
         pager = Pager.new(site.config, num_page, all_posts, pages)
+
         if num_page > 1
           newpage = Page.new(site, site.source, page.dir, page.name)
+          newpage.data['robots'] = robots if robots
+
           newpage.pager = pager
           newpage.dir = File.join(page.dir, paginate_path(site, num_page))
           site.pages << newpage
