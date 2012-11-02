@@ -216,6 +216,7 @@ module Jekyll
       self.tags.values.map { |ps| ps.sort! { |a, b| b <=> a } }
     rescue Errno::ENOENT => e
       # ignore missing layout dir
+      puts e.inspect
     end
 
     # Remove orphaned files and empty directories in destination.
