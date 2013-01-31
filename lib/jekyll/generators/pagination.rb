@@ -1,19 +1,19 @@
 module Jekyll
+  module Generators
+    class Pagination < Generator
+      # This generator is safe from arbitrary code execution.
+      safe true
 
-  class Pagination < Generator
-    # This generator is safe from arbitrary code execution.
-    safe true
-
-    # Generate paginated pages if necessary.
-    #
-    # site - The Site.
-    #
-    # Returns nothing.
-    def generate(site)
-      site.pages.dup.each do |page|
-        paginate(site, page) if Pager.pagination_enabled?(site.config, page.name)
+      # Generate paginated pages if necessary.
+      #
+      # site - The Site.
+      #
+      # Returns nothing.
+      def generate(site)
+        site.pages.dup.each do |page|
+          paginate(site, page) if Pager.pagination_enabled?(site.config, page.name)
+        end
       end
-    end
 
     # Paginates the blog's posts. Renders the index.html file into paginated
     # directories, e.g.: page2/index.html, page3/index.html, etc and adds more
@@ -49,13 +49,13 @@ module Jekyll
           page.pager = pager
         end
       end
-    end
 
-    private
-      def paginate_path(site, num_page)
-        format = site.config['paginate_path']
-        format.sub(':num', num_page.to_s)
-      end
+      private
+        def paginate_path(site, num_page)
+          format = site.config['paginate_path']
+          format.sub(':num', num_page.to_s)
+        end
+    end
   end
 
   class Pager
@@ -121,5 +121,4 @@ module Jekyll
       }
     end
   end
-
 end

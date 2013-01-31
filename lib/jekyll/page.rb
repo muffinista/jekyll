@@ -1,5 +1,4 @@
 module Jekyll
-
   class Page
     include Convertible
 
@@ -22,6 +21,18 @@ module Jekyll
 
       self.process(name)
       self.read_yaml(File.join(base, dir), name)
+    end
+
+    # Read the YAML frontmatter.
+    #
+    # base - The String path to the dir containing the file.
+    # name - The String filename of the file.
+    #
+    # Returns nothing.
+    def read_yaml(base, name)
+      super(base, name)
+      self.data['layout'] = 'page' unless self.data.has_key?('layout')
+      self.data
     end
 
     # The generated directory into which the page will be placed
@@ -153,7 +164,5 @@ module Jekyll
     def index?
       basename == 'index'
     end
-
   end
-
 end
