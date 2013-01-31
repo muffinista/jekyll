@@ -49,7 +49,7 @@ module Jekyll
           page.pager = pager
         end
       end
-
+    end
       private
         def paginate_path(site, num_page)
           format = site.config['paginate_path']
