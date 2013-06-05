@@ -30,7 +30,7 @@ module Jekyll
     #
     # Returns the formatting String.
     def date_to_string(date)
-      date.strftime("%d %b %Y")
+      time(date).strftime("%d %b %Y")
     end
 
     # Format a date in long format e.g. "27 January 2011".
@@ -39,7 +39,7 @@ module Jekyll
     #
     # Returns the formatted String.
     def date_to_long_string(date)
-      date.strftime("%d %B %Y")
+      time(date).strftime("%d %B %Y")
     end
 
     # Format a date for use in XML.
@@ -53,7 +53,21 @@ module Jekyll
     #
     # Returns the formatted String.
     def date_to_xmlschema(date)
-      date.xmlschema
+      time(date).xmlschema
+    end
+
+    # Format a date according to RFC-822
+    #
+    # date - The Time to format.
+    #
+    # Examples
+    #
+    #   date_to_rfc822(Time.now)
+    #   # => "Sun, 24 Apr 2011 12:34:46 +0000"
+    #
+    # Returns the formatted String.
+    def date_to_rfc822(date)
+      time(date).rfc822
     end
 
     # XML escape a string for use. Replaces any special characters with
@@ -85,7 +99,17 @@ module Jekyll
     def cgi_escape(input)
       CGI::escape(input)
     end
-
+    
+    # URI escape a string.
+    #
+    # input - The String to escape.
+    #
+    # Examples
+    #
+    #   uri_escape('foo, bar \\baz?')
+    #   # => "foo,%20bar%20%5Cbaz?"
+    #
+    # Returns the escaped String.
     def uri_escape(input)
       URI.escape(input)
     end
@@ -121,6 +145,19 @@ module Jekyll
         "#{array[0]} #{connector} #{array[1]}"
       else
         "#{array[0...-1].join(', ')}, #{connector} #{array[-1]}"
+      end
+    end
+
+    private
+    def time(input)
+      case input
+      when Time
+        input
+      when String
+        Time.parse(input)
+      else
+        Jekyll.logger.error "Invalid Date:", "'#{input}' is not a valid datetime."
+        exit(1)
       end
     end
   end

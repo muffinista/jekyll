@@ -24,7 +24,7 @@ class Hash
   # and then the plural key, and handling any nil entries.
   #   +hash+ the hash to read from
   #   +singular_key+ the singular key
-  #   +plural_key+ the singular key
+  #   +plural_key+ the plural key
   #
   # Returns an array
   def pluralized_array(singular_key, plural_key)
@@ -56,5 +56,13 @@ module Enumerable
   # Look for more detail about glob pattern in method File::fnmatch.
   def glob_include?(e)
     any? { |exp| File.fnmatch?(exp, e) }
+  end
+end
+
+if RUBY_VERSION < "1.9"
+  class String
+    def force_encoding(enc)
+      self
+    end
   end
 end

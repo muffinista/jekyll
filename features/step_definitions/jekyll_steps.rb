@@ -1,10 +1,11 @@
 Before do
+  FileUtils.rm_rf(TEST_DIR)
   FileUtils.mkdir(TEST_DIR)
   Dir.chdir(TEST_DIR)
 end
 
 After do
-  Dir.chdir(TEST_DIR)
+  Dir.chdir(File.expand_path("..", TEST_DIR))
   FileUtils.rm_rf(TEST_DIR)
 end
 
@@ -21,28 +22,24 @@ Given /^I have an? "(.*)" page(?: with (.*) "(.*)")? that contains "(.*)"$/ do |
 ---
 #{text}
 EOF
-    f.close
   end
 end
 
 Given /^I have an? "(.*)" file that contains "(.*)"$/ do |file, text|
   File.open(file, 'w') do |f|
     f.write(text)
-    f.close
   end
 end
 
 Given /^I have a (.*) layout that contains "(.*)"$/ do |layout, text|
   File.open(File.join('_layouts', layout + '.html'), 'w') do |f|
     f.write(text)
-    f.close
   end
 end
 
 Given /^I have a (.*) theme that contains "(.*)"$/ do |layout, text|
   File.open(File.join('_theme', layout + '.html'), 'w') do |f|
     f.write(text)
-    f.close
   end
 end
 
@@ -50,28 +47,33 @@ Given /^I have an? (.*) directory$/ do |dir|
   FileUtils.mkdir_p(dir)
 end
 
-Given /^I have the following posts?(?: (.*) "(.*)")?:$/ do |direction, folder, table|
+Given /^I have the following (draft|post)s?(?: (in|under) "([^"]+)")?:$/ do |status, direction, folder, table|
   table.hashes.each do |post|
-    date = Date.strptime(post['date'], '%m/%d/%Y').strftime('%Y-%m-%d')
-    title = post['title'].downcase.gsub(/[^\w]/, " ").strip.gsub(/\s+/, '-')
+    title = slug(post['title'])
+    ext = post['type'] || 'textile'
+    before, after = location(folder, direction)
 
-    if direction && direction == "in"
-      before = folder || '.'
-    elsif direction && direction == "under"
-      after = folder || '.'
+    if "draft" == status
+      folder_post = '_drafts'
+      filename = "#{title}.#{ext}"
+    elsif "post" == status
+      parsed_date = Time.xmlschema(post['date']) rescue Time.parse(post['date'])
+      folder_post = '_posts'
+      filename = "#{parsed_date.strftime('%Y-%m-%d')}-#{title}.#{ext}"
     end
 
-    path = File.join(before || '.', '_posts', after || '.', "#{date}-#{title}.#{post['type'] || 'textile'}")
+    path = File.join(before, folder_post, after, filename)
 
     matter_hash = {}
-    %w(title layout tag tags category categories published author).each do |key|
+    %w(title layout tag tags category categories published author path date).each do |key|
       matter_hash[key] = post[key] if post[key]
     end
     matter = matter_hash.map { |k, v| "#{k}: #{v}\n" }.join.chomp
 
-    content = post['content']
-    if post['input'] && post['filter']
-      content = "{{ #{post['input']} | #{post['filter']} }}"
+    content = if post['input'] && post['filter']
+      "{{ #{post['input']} | #{post['filter']} }}"
+    else
+      post['content']
     end
 
     File.open(path, 'w') do |f|
@@ -81,7 +83,6 @@ Given /^I have the following posts?(?: (.*) "(.*)")?:$/ do |direction, folder, t
 ---
 #{content}
 EOF
-      f.close
     end
   end
 end
@@ -89,7 +90,6 @@ end
 Given /^I have a configuration file with "(.*)" set to "(.*)"$/ do |key, value|
   File.open('_config.yml', 'w') do |f|
     f.write("#{key}: #{value}\n")
-    f.close
   end
 end
 
@@ -98,7 +98,6 @@ Given /^I have a configuration file with:$/ do |table|
     table.hashes.each do |row|
       f.write("#{row["key"]}: #{row["value"]}\n")
     end
-    f.close
   end
 end
 
@@ -108,13 +107,16 @@ Given /^I have a configuration file with "([^\"]*)" set to:$/ do |key, table|
     table.hashes.each do |row|
       f.write("- #{row["value"]}\n")
     end
-    f.close
   end
 end
 
 
 When /^I run jekyll$/ do
   run_jekyll
+end
+
+When /^I run jekyll with drafts$/ do
+  run_jekyll(:drafts => true)
 end
 
 When /^I debug jekyll$/ do
@@ -132,7 +134,11 @@ Then /^the (.*) directory should exist$/ do |dir|
 end
 
 Then /^I should see "(.*)" in "(.*)"$/ do |text, file|
-  assert_match Regexp.new(text), File.open(file).readlines.join
+  assert Regexp.new(text).match(File.open(file).readlines.join)
+end
+
+Then /^I should see escaped "(.*)" in "(.*)"$/ do |text, file|
+  assert Regexp.new(Regexp.escape(text)).match(File.open(file).readlines.join)
 end
 
 Then /^the "(.*)" file should exist$/ do |file|

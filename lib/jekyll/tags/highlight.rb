@@ -30,7 +30,13 @@ module Jekyll
             end
           end
         else
-          raise SyntaxError.new("Syntax Error in 'highlight' - Valid syntax: highlight <lang> [linenos]")
+          raise SyntaxError.new <<-eos
+Syntax Error in tag 'highlight' while parsing the following markup:
+
+  #{markup}
+
+Valid syntax: highlight <lang> [linenos]
+eos
         end
       end
 
@@ -43,6 +49,8 @@ module Jekyll
       end
 
       def render_pygments(context, code)
+        require 'pygments'
+
         @options[:encoding] = 'utf-8'
 
         output = add_code_tags(

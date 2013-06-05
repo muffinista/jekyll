@@ -4,14 +4,8 @@ module Jekyll
       def self.process(options)
         site = Jekyll::Site.new(options)
 
-        source = options['source']
-        destination = options['destination']
-
-        if options['watch']
-          self.watch(site, options)
-        else
-          self.build(site, options)
-        end
+        self.build(site, options)
+        self.watch(site, options) if options['watch']
       end
 
       # Private: Build the site from source into destination.
@@ -23,17 +17,11 @@ module Jekyll
       def self.build(site, options)
         source = options['source']
         destination = options['destination']
-        puts "Building site: #{source} -> #{destination}"
-        begin
-          site.process
-        rescue Jekyll::FatalException => e
-          puts
-          puts "ERROR: YOUR SITE COULD NOT BE BUILT:"
-          puts "------------------------------------"
-          puts e.message
-          exit(1)
-        end
-        puts "Successfully generated site: #{source} -> #{destination}"
+        Jekyll.logger.info "Source:", source
+        Jekyll.logger.info "Destination:", destination
+        print Jekyll.logger.formatted_topic "Generating..."
+        self.process_site(site)
+        puts "done."
       end
 
       # Private: Watch for file changes and rebuild the site.
@@ -48,23 +36,23 @@ module Jekyll
         source = options['source']
         destination = options['destination']
 
-        puts "Auto-Regenerating enabled: #{source} -> #{destination}"
+        Jekyll.logger.info "Auto-regeneration:", "enabled"
 
-        dw = DirectoryWatcher.new(source)
+        dw = DirectoryWatcher.new(source, :glob => self.globs(source, destination), :pre_load => true)
         dw.interval = 1
-        dw.glob = self.globs(source)
 
         dw.add_observer do |*args|
           t = Time.now.strftime("%Y-%m-%d %H:%M:%S")
-          puts "[#{t}] regeneration: #{args.size} files changed"
-          site.process
+          print Jekyll.logger.formatted_topic("Regenerating:") + "#{args.size} files at #{t} "
+          self.process_site(site)
+          puts  "...done."
         end
 
         dw.start
 
         unless options['serving']
           trap("INT") do
-            puts "Stopping auto-regeneration..."
+            puts "     Halting auto-regeneration."
             exit 0
           end
 
